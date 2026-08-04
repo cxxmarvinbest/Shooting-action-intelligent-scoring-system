@@ -29,4 +29,7 @@ The system automatically completes player and basketball detection, body key poi
 8.Generative model:`train/weights.pt`  
 9.`beginner_shooting_videos` and `demo.mp4` are videos for testing  
 10.`left_posture_estimation_and_detection_result.mp4` is video from `demo.mp4` with target detection frame and pose estimation skeleton  
-11.Before you use `main.py` to generate exe file, you need to put `train/weights.pt` and  
+11.Before you use `main.py` to generate exe file, you need to put `train/weights.pt` and `shot_1-29` into `dist`, with code `pyinstaller --clean -D -w --collect-data ultralytics main.py`  
+12.`scroing_system.py` includes action segmentation, calculation of critical angle of each section, technical integrity judgment, shot height rating, shot angle evaluation, power chain synergy and force rhythm, knee flexion score, ai score.
+![]
+
