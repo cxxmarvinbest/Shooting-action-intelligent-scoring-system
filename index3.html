@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能体育评测系统 - 双阶段增强版</title>
+    <style>
+        body {
+            background-color: #1E1E2E;
+            color: #CDD6F4;
+            font-family: "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        h1 { color: #A6E3A1; text-align: center; font-size: 32px; }
+        h2.subtitle { color: #89B4FA; font-size: 18px; margin-top: 30px; border-bottom: 2px solid #313244; padding-bottom: 10px; }
+        
+        .upload-section { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        input[type="file"] { display: none; }
+        .btn {
+            background-color: #89B4FA; color: #1E1E2E; font-weight: bold; border: none;
+            border-radius: 8px; padding: 12px 20px; font-size: 15px; cursor: pointer;
+        }
+        .btn:hover { background-color: #74C7EC; }
+        .btn:disabled { background-color: #45475A; color: #6C7086; cursor: not-allowed; }
+        .file-label { text-align: center; color: #aaa; margin-top: -10px; margin-bottom: 20px; }
+
+        #loading { display: none; text-align: center; color: #F9E2AF; font-size: 16px; margin: 20px 0; }
+        
+        .results-section { display: none; }
+        
+        /* 视频对比区 */
+        .video-container { display: flex; gap: 20px; justify-content: center; }
+        .video-box { background-color: #000; border-radius: 10px; overflow: hidden; width: 480px; }
+        video { width: 100%; height: auto; }
+
+        /* 帧图展示区 */
+        .frames-container {
+            display: flex; gap: 10px; overflow-x: auto; padding: 15px 0;
+            scrollbar-width: thin; scrollbar-color: #A6E3A1 #313244;
+        }
+        .frames-container img {
+            height: 180px; border: 2px solid #45475A; border-radius: 5px; cursor: pointer;
+        }
+        .frames-container img:hover { border-color: #A6E3A1; }
+
+        /* 报告卡片区 */
+        .report-card {
+            background-color: #313244; padding: 20px; border-radius: 10px;
+            margin-top: 15px; border: 2px solid #45475A;
+        }
+        .report-card.total { border-color: #A6E3A1; text-align: center; font-size: 20px; }
+        .report-card.ai { border-color: #89B4FA; }
+        
+        /* 隐藏原报告中的表格默认样式，适配暗黑模式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏀 投篮动作智能评分系统 (二段式评测)</h1>
+    
+    <div class="upload-section">
+        <label for="videoUpload" class="btn">📁 选择测试视频</label>
+        <input type="file" id="videoUpload" accept="video/mp4,video/avi,video/quicktime">
+        <button class="btn" id="startBtn" disabled>🚀 开始分段智能评分</button>
+    </div>
+    <div class="file-label" id="fileName">尚未选择视频</div>
+
+    <div id="loading">⏳ 模型正在火热推断中，这可能需要几十秒，请稍候...</div>
+
+    <div class="results-section" id="resultsArea">
+        <h2 class="subtitle">▶️ 分段姿态跟踪 (准备-下蹲 vs 蹬伸-出手)</h2>
+        <div class="video-container">
+            <div class="video-box"><video id="vid1" controls autoplay loop muted></video></div>
+            <div class="video-box"><video id="vid2" controls autoplay loop muted></video></div>
+        </div>
+
+        <h2 class="subtitle">🎞️ 逐帧动作分析 (横向滚动查看)</h2>
+        <div class="frames-container" id="framesList"></div>
+
+        <h2 class="subtitle">🏆 双阶段综合评测报告</h2>
+        <div class="report-card total" id="totalScoreCard">
+            <!-- 综合得分动态插入 -->
+        </div>
+
+        <div class="report-card" id="completenessCard"></div>
+        <div class="report-card" id="coordCard"></div>
+        <div class="report-card" id="kneeCard"></div>
+        <div class="report-card" id="releaseCard"></div>
+
+        <div class="report-card ai" id="aiReportCard"></div>
+    </div>
+</div>
+
+<div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; flex-direction:column;">
+    <span onclick="closeModal()" style="position:absolute; top:20px; right:40px; font-size:40px; color:white; cursor:pointer; font-weight:bold;">&times;</span>
+    <div style="display:flex; align-items:center; justify-content:space-between; width:90%; max-width:1000px;">
+        <button onclick="prevImage()" style="font-size:40px; background:none; border:none; color:white; cursor:pointer; padding:20px;">&#10094;</button>
+        <img id="modalImg" style="max-height:85vh; max-width:100%; border:2px solid #89B4FA; border-radius:8px;">
+        <button onclick="nextImage()" style="font-size:40px; background:none; border:none; color:white; cursor:pointer; padding:20px;">&#10095;</button>
+    </div>
+    <div id="modalCounter" style="color:#A6ADC8; margin-top:15px; font-size:16px;"></div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('videoUpload');
+    const startBtn = document.getElementById('startBtn');
+    const fileNameDisplay = document.getElementById('fileName');
+    const loadingDiv = document.getElementById('loading');
+    const resultsArea = document.getElementById('resultsArea');
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            fileNameDisplay.textContent = `已选择: ${e.target.files[0].name}`;
+            startBtn.disabled = false;
+        } else {
+            fileNameDisplay.textContent = '尚未选择视频';
+            startBtn.disabled = true;
+        }
+    });
+
+    startBtn.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('video', file);
+
+        // UI 状态切换
+        startBtn.disabled = true;
+        fileInput.disabled = true;
+        resultsArea.style.display = 'none';
+        loadingDiv.style.display = 'block';
+
+        try {
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                alert(`分析失败: ${data.error}`);
+            } else {
+                renderResults(data);
+            }
+        } catch (error) {
+            alert(`网络或服务器错误: ${error}`);
+        } finally {
+            startBtn.disabled = false;
+            fileInput.disabled = false;
+            loadingDiv.style.display = 'none';
+        }
+    });
+
+    function renderResults(data) {
+        // 渲染视频
+        document.getElementById('vid1').src = data.v1_url;
+        document.getElementById('vid2').src = data.v2_url;
+
+        // 定义全局变量来存储图片列表和当前索引
+        window.currentFrames = data.frames;
+        window.currentIndex = 0;
+
+        const framesList = document.getElementById('framesList');
+        framesList.innerHTML = '';
+        data.frames.forEach((frameUrl, index) => {
+            const img = document.createElement('img');
+            img.src = frameUrl;
+            // 点击时调用 openModal 并传入当前索引
+            img.onclick = () => openModal(index); 
+            framesList.appendChild(img);
+        });
+
+        // 渲染总分
+        const scoreColor = data.total_score > 80 ? '#A6E3A1' : (data.total_score > 60 ? '#F9E2AF' : '#F38BA8');
+        document.getElementById('totalScoreCard').innerHTML = `
+            🎯 <b>综合总得分：<span style="color:${scoreColor}; font-size:1.5em;">${data.total_score.toFixed(1)} / 100</span></b>
+            <div style="font-size: 16px; margin-top: 10px; color: #A6ADC8;">
+                阶段1(准备-下蹲)：${data.score1.toFixed(1)} &nbsp;|&nbsp; 阶段2(蹬伸-出手)：${data.score2.toFixed(1)}
+            </div>
+        `;
+
+        // 渲染单项报告 (由于后端直接生成了带 HTML 格式的报告字符串，可直接插入 HTML)
+        document.getElementById('completenessCard').innerHTML = `
+            <div style="text-align:center; font-size:18px; margin-bottom:10px;">📋 <b>核心环节技术完整度：<span style="color:#A6E3A1">${data.completeness.score.toFixed(1)}%</span></b></div>
+            ${data.completeness.report}
+        `;
+        document.getElementById('coordCard').innerHTML = `
+            <div style="text-align:center; font-size:18px; margin-bottom:10px;">🔗 <b>动力链协同发力：<span style="color:#A6E3A1">${data.coordination.score.toFixed(1)} / 100</span></b></div>
+            ${data.coordination.report}
+        `;
+        document.getElementById('kneeCard').innerHTML = `
+            <div style="text-align:center; font-size:18px; margin-bottom:10px;">🦵 <b>屈膝发力与爆发性：<span style="color:#A6E3A1">${data.knee.score.toFixed(1)} / 100</span></b></div>
+            ${data.knee.report}
+        `;
+        document.getElementById('releaseCard').innerHTML = `
+            <div style="text-align:center; font-size:18px; margin-bottom:10px;">📐 <b>出手角度评估：<span style="color:#A6E3A1">${data.release.score.toFixed(1)} / 100</span></b></div>
+            ${data.release.report}
+        `;
+
+        // 渲染 AI 报告
+        document.getElementById('aiReportCard').innerHTML = `
+            <div style="text-align:center; font-size:18px; margin-bottom:10px;">🤖 <b>AI 豆包大模型 - 智能教练指导意见</b></div>
+            <div style="line-height:1.6;">${data.ai_report.replace(/\n/g, '<br>')}</div>
+        `;
+
+        // 显示结果
+        resultsArea.style.display = 'block';
+
+        // 打开模态框
+    function openModal(index) {
+        window.currentIndex = index;
+        updateModalContent();
+        document.getElementById('imageModal').style.display = 'flex';
+    }
+
+    // 关闭模态框
+    function closeModal() {
+        document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // 上一张
+    function prevImage() {
+        if (window.currentIndex > 0) {
+            window.currentIndex--;
+            updateModalContent();
+        }
+    }
+
+    // 下一张
+    function nextImage() {
+        if (window.currentIndex < window.currentFrames.length - 1) {
+            window.currentIndex++;
+            updateModalContent();
+        }
+    }
+
+    // 更新模态框内的图片和计数器
+    function updateModalContent() {
+        const modalImg = document.getElementById('modalImg');
+        const counter = document.getElementById('modalCounter');
+        
+        modalImg.src = window.currentFrames[window.currentIndex];
+        counter.textContent = `第 ${window.currentIndex + 1} 帧 / 共 ${window.currentFrames.length} 帧`;
+    }
+
+    // 支持键盘左右键和ESC键控制
+    document.addEventListener('keydown', function(event) {
+        const modal = document.getElementById('imageModal');
+        if (modal.style.display === 'flex') {
+            if (event.key === 'ArrowLeft') {
+                prevImage();
+            } else if (event.key === 'ArrowRight') {
+                nextImage();
+            } else if (event.key === 'Escape') {
+                closeModal();
+            }
+        }
+    });
+    }
+</script>
+</body>
+</html>
