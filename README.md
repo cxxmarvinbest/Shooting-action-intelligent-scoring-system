@@ -31,5 +31,13 @@ The system automatically completes player and basketball detection, body key poi
 10.`left_posture_estimation_and_detection_result.mp4` is video from `demo.mp4` with target detection frame and pose estimation skeleton  
 11.Before you use `main.py` to generate exe file, you need to put `train/weights.pt` and `shot_1-29` into `dist`, with code `pyinstaller --clean -D -w --collect-data ultralytics main.py`  
 12.`scroing_system.py` includes action segmentation, calculation of critical angle of each section, technical integrity judgment, shot height rating, shot angle evaluation, power chain synergy and force rhythm, knee flexion score, ai score.
-![]
-
+![action segmentation](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/action%20segmentation.jpg)
+![calculation of critical angle of each section](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/calculation%20of%20critical%20angle.jpg)
+![scoring](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/scoring.jpg)
+![technical integrity judgment](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/technical%20integrity%20judgment.jpg)
+![shot height rating](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/shot%20height%20rating.jpg)
+![shot angle evaluation](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/shot%20angle%20evaluation.jpg)
+![power chain synergy and force rhythm](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/power%20Chain%20synergy%20and%20force%20rhythm.jpg)
+![knee flexion score](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/knee%20flexion%20score.jpg)
+![ai score](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/ai%20score.jpg)
+13.
