@@ -24,4 +24,6 @@ The system automatically completes player and basketball detection, body key poi
 3.Configure domestic mirrors(https://mirrors.tuna.tsinghua.edu.cn/help/pypi/)  
 4.Use `MakeSense` to annotate the image, dividing it into `0 player` and `1 basketball`  
 5.Split the `images` and `Annotation` into `train` and `val`, and place them into `datasets`  
-6.Configure and specify the paths of the dataset and category information:datasets/data.yaml
+6.Configure and specify the paths of the dataset and category information:`1yolo-lanqiu.yaml`  
+7.Train model:`1yolo-train.py`
+8.Generative model:models/best.pt
