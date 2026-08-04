@@ -25,7 +25,7 @@ The system automatically completes player and basketball detection, body key poi
 4.Use `MakeSense` to annotate the image, dividing it into `0 player` and `1 basketball`  
 5.Split the `images` and `Annotation` into `train` and `val`, and place them into `datasets`  
 6.Configure and specify the paths of the dataset and category information:`1yolo-lanqiu.yaml`  
-7.Train model:`1yolo-train.py`
+7.Train model:`1yolo-train.py`  
 8.Generative model:`train/weights.pt`  
 9.`beginner_shooting_videos` and `demo.mp4` are videos for testing  
 10.`left_posture_estimation_and_detection_result.mp4` is video from `demo.mp4` with target detection frame and pose estimation skeleton  
