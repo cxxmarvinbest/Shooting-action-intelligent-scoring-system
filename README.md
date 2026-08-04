@@ -40,4 +40,5 @@ The system automatically completes player and basketball detection, body key poi
 ![power chain synergy and force rhythm](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/power%20Chain%20synergy%20and%20force%20rhythm.jpg)
 ![knee flexion score](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/knee%20flexion%20score.jpg)
 ![ai score](https://github.com/cxxmarvinbest/Shooting-action-intelligent-scoring-system/blob/main/scoring_system/ai%20score.jpg)
-13.
+13.`1pyqt6.py` cut multiple shots into a single
+
