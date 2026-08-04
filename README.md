@@ -26,4 +26,7 @@ The system automatically completes player and basketball detection, body key poi
 5.Split the `images` and `Annotation` into `train` and `val`, and place them into `datasets`  
 6.Configure and specify the paths of the dataset and category information:`1yolo-lanqiu.yaml`  
 7.Train model:`1yolo-train.py`
-8.Generative model:models/best.pt
+8.Generative model:`train/weights.pt`  
+9.`beginner_shooting_videos` and `demo.mp4` are videos for testing  
+10.`left_posture_estimation_and_detection_result.mp4` is video from `demo.mp4` with target detection frame and pose estimation skeleton  
+11.Before you use `main.py` to generate exe file, you need to put `train/weights.pt` and  
